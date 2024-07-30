@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Delete product in cart</h1>
+<form action="{% url 'delete_product_cart' %}" method="get">
+    <label for="code">Kod of product:</label>
+    <input type="text" id="code" name="code" required>
+    <button type="submit">Delete</button>
+</form>
+<a href="{% url 'my_cart' %}">Back</a>
+{% endblock %}

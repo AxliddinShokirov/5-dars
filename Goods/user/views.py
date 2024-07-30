@@ -1,15 +1,18 @@
 from django.shortcuts import render, redirect
 from Goods import models
-
+from django.core.exceptions import ObjectDoesNotExist
 
 def myCart(request):
-    cart = models.Cart.objects.get(author=request.user, is_active=True)
-    cartProduct = models.CartProduct.objects.filter(cart= cart)
-    context = {}
-    context['cart']=cart
-    context['cartpro']=cartProduct
+    try:
+        cart = models.Cart.objects.get(author=request.user, is_active=True)
+    except models.Cart.DoesNotExist:
+        cart = models.Cart.objects.create(author=request.user, is_active=True)
+    cartProduct = models.CartProduct.objects.filter(cart=cart)
+    context = {
+        'cart': cart,
+        'cartpro': cartProduct
+    }
     return render(request, 'user/detail.html', context)
-
 
 def addProductToCart(request, id):
     product_id = id
@@ -29,9 +32,7 @@ def addProductToCart(request, id):
     if quantity and product.price:
         cart_product.total_price = quantity * float(product.price)
         cart_product.save()
-    return redirect('mycart')
-
-
+    return redirect('myCart')
 
 def substruct(request, id):
     code = id
@@ -39,22 +40,17 @@ def substruct(request, id):
     product_cart = models.CartProduct.objects.get(id=code)
     product_cart.quantity = quantity
     product_cart.save()
-    if not product_cart.quantity:
+    if product_cart.quantity == 0:
         product_cart.delete()
-    return redirect('mycart')
-
-
+    return redirect('myCart')
 
 def deleteProductCart(request, id):
     product_cart = models.CartProduct.objects.get(id=id)
     product_cart.delete()
-    return redirect('mycart')
-
+    return redirect('myCart')
 
 def CreateOrder(request, id):
-    print('boshi')
     cart = models.Cart.objects.get(id=id)
-    
     cart_products = models.CartProduct.objects.filter(cart=cart)
 
     done_products = []
@@ -69,16 +65,17 @@ def CreateOrder(request, id):
                 product.product.quantity += product.quantity
                 product.product.save()
             raise ValueError('Qoldiqda kamchilik')
+
     if request.method == 'POST':
         models.Order.objects.create(
             cart_id=cart.id,
-            full_name = request.POST['full_name'],
-            email = request.POST['email'],
-            phone = request.POST['phone'],
-            address = request.POST['address'],
-            status = 1
-            )
+            full_name=request.POST['full_name'],
+            email=request.POST['email'],
+            phone=request.POST['phone'],
+            address=request.POST['address'],
+            status=1
+        )
         cart.is_active = False
         cart.save()
         return render(request, 'user/order.html')
-    return redirect('mycart')
+    return redirect('myCart')

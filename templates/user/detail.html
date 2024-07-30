@@ -61,7 +61,7 @@
                             <a href="#"><img width="91" height="91" src="{% static 'assets/img/cart/cat-img-1.png' %}" alt="Image" class="img-fluid"></a>
                         </td>
                         <td>{{ pro.product.name }}</td>
-                        <td>${{ pro.product.price }}</td>
+                        <td>{{ pro.product.price }}</td>
                         <td>
                             <form action="{% url 'substract' pro.id %}" method="POST" class="form-inline">
                                 {% csrf_token %}
